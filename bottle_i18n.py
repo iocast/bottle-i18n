@@ -50,11 +50,9 @@ class I18NPlugin(object):
     def middleware(self, middleware):
         self._middleware = middleware
     
-    def __init__(self, domain, locale_dir=None, lang_code=None, default=None, keyword='i18n'):
+    def __init__(self, domain, locale_dir, lang_code=None, default='en', keyword='i18n'):
         self.domain = domain
         if locale_dir is None:
-            locale_dir = os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), '../locale'))
-        if not os.path.exists(locale_dir):
             raise PluginError('No locale directory found, please assign a right one.')
         self.locale_dir = locale_dir
         

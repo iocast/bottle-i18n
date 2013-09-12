@@ -9,7 +9,7 @@ except ImportError:
 
 setup(
       name = 'bottle-i18n',
-      version = '0.1',
+      version = '0.1.1',
       description = 'I18N integration for Bottle.',
       author = 'iocast',
       author_email = 'iocast@me.com',
