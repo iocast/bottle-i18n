@@ -15,9 +15,12 @@ class I18NMiddleware(object):
     @property
     def http_accept_language(self):
         return self.header.get('HTTP_ACCEPT_LANGUAGE')
+    @property
+    def app(self):
+        return self._app
     
     def __init__(self, app, i18n, sub_app=True):
-        self.app = app
+        self._app = app
         self.app.install(i18n)
         self._http_language = ""
         i18n.middleware = self
@@ -49,28 +52,31 @@ class I18NPlugin(object):
     @middleware.setter
     def middleware(self, middleware):
         self._middleware = middleware
+    @property
+    def keyword(self):
+        return self._keyword
     
     def __init__(self, domain, locale_dir, lang_code=None, default='en', keyword='i18n'):
         self.domain = domain
         if locale_dir is None:
             raise PluginError('No locale directory found, please assign a right one.')
-        self.locale_dir = locale_dir
+        self._locale_dir = locale_dir
         
-        self.locales = self._get_languages(self.locale_dir)
-        self.default = default
-        self.lang_code = lang_code
+        self._locales = self._get_languages(self._locale_dir)
+        self._default = default
+        self._lang_code = lang_code
         
-        self.cache = {}
-        self.apps = []
-        self.keyword = keyword
+        self._cache = {}
+        self._apps = []
+        self._keyword = keyword
     
     def _get_languages(self, directory):
-        return [dir for dir in os.listdir(self.locale_dir) if os.path.isdir(os.path.join(directory, dir))]
+        return [dir for dir in os.listdir(self._locale_dir) if os.path.isdir(os.path.join(directory, dir))]
     
     
     def setup(self, app):
-        self.apps.append(app)
-        for app in self.apps:
+        self._apps.append(app)
+        for app in self._apps:
             app._ = lambda s: s
             app.hooks.add('before_request', self.prepare)
             
@@ -95,47 +101,47 @@ class I18NPlugin(object):
     def detect_locale(self):
         locale_q_pairs = self.parse_accept_language(self.middleware.http_accept_language)
         for pair in locale_q_pairs:
-            for locale in self.locales:
+            for locale in self._locales:
                 if pair[0].replace('-', '_').lower().startswith(locale.lower()):
                     return locale
         
-        return self.default
+        return self._default
     
     
     def get_lang(self):
-        return self.lang_code
+        return self._lang_code
     
     def set_lang(self, lang_code=None):
-        self.lang_code = lang_code
-        if self.lang_code is None:
-            self.lang_code = self.detect_locale()
+        self._lang_code = lang_code
+        if self._lang_code is None:
+            self._lang_code = self.detect_locale()
         
         self.prepare()
     
     def prepare(self, *args, **kwargs):
-        if self.lang_code is None:
-            self.lang_code = self.detect_locale()
+        if self._lang_code is None:
+            self._lang_code = self.detect_locale()
         
-        if self.lang_code in self.cache.keys():
-            trans = self.cache[self.lang_code]
+        if self._lang_code in self._cache.keys():
+            trans = self._cache[self._lang_code]
             if trans:
                 trans.install()
-                for app in self.apps:
+                for app in self._apps:
                     app._ = trans.gettext
             else:
-                for app in self.apps:
+                for app in self._apps:
                     app._ = lambda s: s
             return
         try:
-            trans = gettext.translation(self.domain, self.locale_dir, languages=[self.lang_code])
+            trans = gettext.translation(self.domain, self._locale_dir, languages=[self._lang_code])
             trans.install()
-            for app in self.apps:
+            for app in self._apps:
                 app._ = trans.gettext
-            self.cache[self.lang_code] = trans
+            self._cache[self._lang_code] = trans
         except Exception, e:
-            for app in self.apps:
+            for app in self._apps:
                 app._ = lambda s: s
-            self.cache[self.lang_code] = None
+            self._cache[self._lang_code] = None
     
     
     def apply(self, callback, route):
