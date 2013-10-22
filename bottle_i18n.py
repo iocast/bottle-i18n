@@ -41,6 +41,8 @@ class I18NMiddleware(object):
                 e['PATH_INFO'] = e['PATH_INFO'][len(locale)+1:]
         return self.app(e,h)
 
+Middleware = I18NMiddleware
+
 
 class I18NPlugin(object):
     name = 'i18n'
@@ -146,3 +148,6 @@ class I18NPlugin(object):
     
     def apply(self, callback, route):
         return callback
+
+
+Plugin = I18NPlugin
