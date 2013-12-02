@@ -13,6 +13,9 @@ def get():
     def index():
         return bottle.template("<b>{{_('hello')}} I18N<b/>?")
     
+    @app.route('/world')
+    def variable():
+        return bottle.template("<b>{{_('hello %(variable)s', {'variable': world})}}<b/>?", {'world': app._('world')})
     
     sub_app = bottle.Bottle()
 

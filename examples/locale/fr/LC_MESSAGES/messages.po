@@ -17,3 +17,8 @@ msgstr ""
 msgid "hello"
 msgstr "Bonjour"
 
+msgid "hello %(variable)s"
+msgstr "Bonjour %(variable)s"
+
+msgid "world"
+msgstr "Univers"

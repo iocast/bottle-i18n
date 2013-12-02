@@ -2,13 +2,14 @@ The bottle-i18n plugin integrates the multilingual internationalization services
 
 Usage Example:
 
-``` python
+```python
 #!/usr/bin/python
 
 import bottle
 from bottle.ext.i18n import I18NPlugin, I18NMiddleware, i18n_defaults
 
 i18n_defaults(bottle.SimpleTemplate, bottle.request)
+
 
 def get():
     app = bottle.Bottle()
@@ -17,6 +18,9 @@ def get():
     def index():
         return bottle.template("<b>{{_('hello')}} I18N<b/>?")
     
+    @app.route('/world')
+    def variable():
+        return bottle.template("<b>{{_('hello %(variable)s', {'variable': world})}}<b/>?", {'world': app._('world')})
     
     sub_app = bottle.Bottle()
 

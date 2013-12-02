@@ -14,6 +14,13 @@ msgstr ""
 "Content-Transfer-Encoding: UTF-8\n"
 "Generated-By: pygettext.py 1.5\n"
 
+
 msgid "hello"
 msgstr "Hello"
+
+msgid "hello %(variable)s"
+msgstr "Hello %(variable)s"
+
+msgid "world"
+msgstr "World"
 

@@ -3,7 +3,7 @@ from bottle import PluginError
 
 
 def i18n_defaults(template, request):
-    template.defaults['_'] = lambda msgid: request.app._(msgid)
+    template.defaults['_'] = lambda msgid, options=None: request.app._(msgid) % options if options else request.app._(msgid)
     template.defaults['lang'] = lambda: request.app.lang
 
 
@@ -41,8 +41,8 @@ class I18NMiddleware(object):
                 e['PATH_INFO'] = e['PATH_INFO'][len(locale)+1:]
         return self.app(e,h)
 
-Middleware = I18NMiddleware
 
+Middleware = I18NMiddleware
 
 class I18NPlugin(object):
     name = 'i18n'
@@ -57,6 +57,9 @@ class I18NPlugin(object):
     @property
     def keyword(self):
         return self._keyword
+    @property
+    def locales(self):
+        return self._locales
     
     def __init__(self, domain, locale_dir, lang_code=None, default='en', keyword='i18n'):
         self.domain = domain
@@ -119,7 +122,11 @@ class I18NPlugin(object):
             self._lang_code = self.detect_locale()
         
         self.prepare()
-    
+
+    #def get_ungettext(self, msgid, options):
+    #    trans = self._cache[self._lang_code]
+    #    return trans.gettext(msgid) % options
+
     def prepare(self, *args, **kwargs):
         if self._lang_code is None:
             self._lang_code = self.detect_locale()
