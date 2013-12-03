@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import os
 from distutils.core import setup
 
 try:
@@ -7,8 +8,10 @@ try:
 except ImportError:
     from distutils.command.build_py import build_py
 
-with open('README.md') as file:
-    long_description = file.read()
+long_description = ""
+if os.path.exists('README.rst'):
+    with open('README.rst') as file:
+        long_description = file.read()
 
 setup(
       name = 'bottle-i18n',
