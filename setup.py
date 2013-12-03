@@ -7,7 +7,7 @@ try:
 except ImportError:
     from distutils.command.build_py import build_py
 
-with open('readme.md') as file:
+with open('README.md') as file:
     long_description = file.read()
 
 setup(
