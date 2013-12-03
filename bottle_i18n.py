@@ -1,10 +1,36 @@
-import gettext, os, re
-from bottle import PluginError
+import gettext, os, re, functools
+from bottle import PluginError, request, template, DictMixin, TEMPLATE_PATH
 
 
 def i18n_defaults(template, request):
     template.defaults['_'] = lambda msgid, options=None: request.app._(msgid) % options if options else request.app._(msgid)
     template.defaults['lang'] = lambda: request.app.lang
+
+
+def i18n_template(*args, **kwargs):
+    tpl = args[0] if args else None
+    if tpl:
+        tpl = os.path.join("{lang!s}/".format(lang=request.app.lang), tpl)
+    eles = list(args)
+    eles[0] = tpl
+    args = tuple(eles)
+    return template(*args, **kwargs)
+
+def i18n_view(tmpl, **defaults):
+    def decorator(func):
+        @functools.wraps(func)
+        def wrapper(*args, **kwargs):
+            file = os.path.join("{lang!s}/".format(lang=request.app.lang), tmpl)
+            result = func(*args, **kwargs)
+            if isinstance(result, (dict, DictMixin)):
+                tplvars = defaults.copy()
+                tplvars.update(result)
+                return template(file, **tplvars)
+            elif result is None:
+                return template(file, defaults)
+            return result
+        return wrapper
+    return decorator
 
 
 class I18NMiddleware(object):
@@ -60,6 +86,9 @@ class I18NPlugin(object):
     @property
     def locales(self):
         return self._locales
+    @property
+    def local_dir(self):
+        return self._locale_dir
     
     def __init__(self, domain, locale_dir, lang_code=None, default='en', keyword='i18n'):
         self.domain = domain
@@ -122,10 +151,6 @@ class I18NPlugin(object):
             self._lang_code = self.detect_locale()
         
         self.prepare()
-
-    #def get_ungettext(self, msgid, options):
-    #    trans = self._cache[self._lang_code]
-    #    return trans.gettext(msgid) % options
 
     def prepare(self, *args, **kwargs):
         if self._lang_code is None:

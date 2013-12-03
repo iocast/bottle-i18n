@@ -7,10 +7,14 @@ try:
 except ImportError:
     from distutils.command.build_py import build_py
 
+with open('readme.md') as file:
+    long_description = file.read()
+
 setup(
       name = 'bottle-i18n',
-      version = '0.1.2',
+      version = '0.1.3',
       description = 'I18N integration for Bottle.',
+      long_description = long_description,
       author = 'iocast',
       author_email = 'iocast@me.com',
       url = 'http://www.github.com/iocast/bottle-i18n',
