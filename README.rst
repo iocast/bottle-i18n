@@ -43,7 +43,7 @@ Usage Example:
 	    
 	    return I18NMiddleware(app, I18NPlugin(domain='messages', default='en', locale_dir='./locale'))
 	
-	__name__ == '__main__':
+	if __name__ == '__main__':
 	    bottle.run(app=get(), host='localhost', port='8000', quiet=False, reloader=True, debug=True)
 
 Running the above example it automatically loads the default language `en` if in the URL the langauge code or the `HTTP_ACCEPT_LANGUAGE` sent from the browser is missing.
