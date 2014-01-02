@@ -117,6 +117,8 @@ class I18NPlugin(object):
             app.__class__.lang = property(fget=lambda x: self.get_lang(), fset=lambda x, value: self.set_lang(value))
     
     def parse_accept_language(self, accept_language):
+        if accept_language == None:
+            return []
         languages = accept_language.split(",")
         locale_q_pairs = []
         
