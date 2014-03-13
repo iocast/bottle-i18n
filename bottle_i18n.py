@@ -112,7 +112,12 @@ class I18NPlugin(object):
         self._apps.append(app)
         for app in self._apps:
             app._ = lambda s: s
-            app.hooks.add('before_request', self.prepare)
+            
+            if hasattr(app, 'add_hook'):
+                # attribute hooks was renamed to _hooks in version 0.12.x and add_hook method was introduced instead.
+                app.add_hook('before_request', self.prepare)
+            else:
+                app.hooks.add('before_request', self.prepare)
             
             app.__class__.lang = property(fget=lambda x: self.get_lang(), fset=lambda x, value: self.set_lang(value))
     

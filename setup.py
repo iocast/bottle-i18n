@@ -15,7 +15,7 @@ if os.path.exists('README.rst'):
 
 setup(
       name = 'bottle-i18n',
-      version = '0.1.4',
+      version = '0.1.5',
       description = 'I18N integration for Bottle.',
       long_description = long_description,
       author = 'iocast',
