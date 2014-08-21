@@ -1,4 +1,4 @@
-import gettext, os, re, functools
+import gettext, os, re, functools, sys
 from bottle import PluginError, request, template, DictMixin, TEMPLATE_PATH
 
 
@@ -163,8 +163,11 @@ class I18NPlugin(object):
         self.prepare()
 
     def bytestring_decoded_gettext(self, value):
-        _value = self.trans.gettext(value)
-        return _value.decode(self.trans.charset())
+        if sys.version_info.major >= 3:
+            return self.trans.gettext(value)
+        else:
+            _value = self.trans.gettext(value)
+            return _value.decode(self.trans.charset())
 
     def prepare(self, *args, **kwargs):
         if self._lang_code is None:
