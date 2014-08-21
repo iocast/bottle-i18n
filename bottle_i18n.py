@@ -46,11 +46,28 @@ class I18NMiddleware(object):
     def app(self):
         return self._app
 
-    def __init__(self, app, i18n, sub_app=True):
+    def __init__(self, app, i18n, sub_app=True, *kw, **kwargs):
+        """
+        key `external_translators` in kwargs
+
+        formalchemy allows application translator to pass in to translate
+        application specified label per request environ, for example,
+        `self.your_field.label(_(YOUR_LABEL))`, the translation of YOUR_LABEL
+        is not resided in formalchemy, but your own application, so in this
+        case we would like translator from the root application to translate
+        it.
+
+        formalchemy external translator environ key `fa.translate`
+
+        i18n.I18NMiddleware(app, i18n_plugin,
+            **{"external_translators": ["fa.translate"]})
+        """
         self._app = app
         self.app.install(i18n)
         self._http_language = ""
         i18n.middleware = self
+
+        self.translators = kwargs.get("external_translators")
 
         if sub_app:
             for route in self.app.routes:
@@ -67,7 +84,12 @@ class I18NMiddleware(object):
                 e['PATH_INFO'] = e['PATH_INFO'][len(locale)+1:]
             else:
                 self.app.lang = i18n._default
-        return self.app(e,h)
+
+        if self.translators:
+            for translator in self.translators:
+                e[translator] = self.app._
+
+        return self.app(e, h)
 
 
 Middleware = I18NMiddleware
