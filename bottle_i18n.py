@@ -65,6 +65,8 @@ class I18NMiddleware(object):
             if locale in i18n.locales:
                 self.app.lang = locale
                 e['PATH_INFO'] = e['PATH_INFO'][len(locale)+1:]
+            else:
+                self.app.lang = i18n._default
         return self.app(e,h)
 
 
