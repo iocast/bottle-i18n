@@ -162,26 +162,30 @@ class I18NPlugin(object):
 
         self.prepare()
 
+    def bytestring_decoded_gettext(self, value):
+        _value = self.trans.gettext(value)
+        return _value.decode(self.trans.charset())
+
     def prepare(self, *args, **kwargs):
         if self._lang_code is None:
             self._lang_code = self.detect_locale()
 
         if self._lang_code in self._cache.keys():
-            trans = self._cache[self._lang_code]
-            if trans:
-                trans.install()
+            self.trans = self._cache[self._lang_code]
+            if self.trans:
+                self.trans.install()
                 for app in self._apps:
-                    app._ = trans.gettext
+                    app._ = self.bytestring_decoded_gettext
             else:
                 for app in self._apps:
                     app._ = lambda s: s
             return
         try:
-            trans = gettext.translation(self.domain, self._locale_dir, languages=[self._lang_code])
-            trans.install()
+            self.trans = gettext.translation(self.domain, self._locale_dir, languages=[self._lang_code])
+            self.trans.install()
             for app in self._apps:
-                app._ = trans.gettext
-            self._cache[self._lang_code] = trans
+                app._ = self.bytestring_decoded_gettext
+            self._cache[self._lang_code] = self.trans
         except Exception, e:
             for app in self._apps:
                 app._ = lambda s: s
