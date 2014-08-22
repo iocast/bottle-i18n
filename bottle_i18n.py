@@ -1,6 +1,17 @@
-import gettext, os, re, functools, sys
-from bottle import PluginError, request, template, DictMixin, TEMPLATE_PATH
+# -*- coding: utf-8 -*-
+#
 
+import functools
+import gettext
+import os
+import sys
+
+from bottle import (
+    DictMixin,
+    PluginError,
+    request,
+    template,
+)
 
 def i18n_defaults(template, request):
     template.defaults['_'] = lambda msgid, options=None: request.app._(msgid) % options if options else request.app._(msgid)
@@ -61,6 +72,11 @@ class I18NMiddleware(object):
 
         i18n.I18NMiddleware(app, i18n_plugin,
             **{"external_translators": ["fa.translate"]})
+
+        `explicit_redirect`
+        assume default language is "de", url "/" is requested, if
+        `explicit_redirect` is enabled, the lang code will be always prepended
+        to the request url, so "/" becomes "/de".
         """
         self._app = app
         self.app.install(i18n)
@@ -69,30 +85,39 @@ class I18NMiddleware(object):
 
         self.translators = kwargs.get("external_translators")
 
+        self.is_explicit_redirect = kwargs.get("explicit_redirect")
+
         if sub_app:
             for route in self.app.routes:
                 if route.config.get('mountpoint'):
                     route.config.get('mountpoint').get('target').install(i18n)
 
-    def __call__(self, e, h):
-        self._http_language = e.get('HTTP_ACCEPT_LANGUAGE')
-        self._header = e
-        locale = e['PATH_INFO'].split('/')[1]
+    def __call__(self, environ, start_response):
+        self._http_language = environ.get('HTTP_ACCEPT_LANGUAGE')
+        self._header = environ
+        locale = environ['PATH_INFO'].split('/')[1]
         for i18n in [plugin for plugin in self.app.plugins if plugin.name == 'i18n']:
             if locale in i18n.locales:
                 self.app.lang = locale
-                e['PATH_INFO'] = e['PATH_INFO'][len(locale)+1:]
+                environ['PATH_INFO'] = environ['PATH_INFO'][len(locale)+1:]
             else:
                 self.app.lang = i18n._default
+                if self.is_explicit_redirect:
+                    _url = "/{0}{1}".format(
+                        i18n._default, environ['PATH_INFO'])
+                    start_response('302 Found', [('Location', _url)],
+                        sys.exc_info())
+                    return []
 
         if self.translators:
             for translator in self.translators:
-                e[translator] = self.app._
+                environ[translator] = self.app._
 
-        return self.app(e, h)
+        return self.app(environ, start_response)
 
 
 Middleware = I18NMiddleware
+
 
 class I18NPlugin(object):
     name = 'i18n'
@@ -221,3 +246,7 @@ class I18NPlugin(object):
 
 
 Plugin = I18NPlugin
+
+### EOF ###
+## vim:smarttab:sts=4:sw=4:et:ai:tw=80:
+
