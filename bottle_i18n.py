@@ -214,7 +214,15 @@ class I18NPlugin(object):
             return self.trans.gettext(value)
         else:
             _value = self.trans.gettext(value)
-            return _value.decode(self.trans.charset())
+            # check is _value is unicode to avoid dup decode
+            if not isinstance(_value, unicode):
+                return _value.decode(self.trans.charset())
+            else:
+                return _value
+
+    def install_underscore(self):
+        import __builtin__
+        __builtin__.__dict__['_'] = self.bytestring_decoded_gettext
 
     def prepare(self, *args, **kwargs):
         if self._lang_code is None:
@@ -223,7 +231,7 @@ class I18NPlugin(object):
         if self._lang_code in self._cache.keys():
             self.trans = self._cache[self._lang_code]
             if self.trans:
-                self.trans.install()
+                self.install_underscore()
                 for app in self._apps:
                     app._ = self.bytestring_decoded_gettext
             else:
@@ -232,7 +240,7 @@ class I18NPlugin(object):
             return
         try:
             self.trans = gettext.translation(self.domain, self._locale_dir, languages=[self._lang_code])
-            self.trans.install()
+            self.install_underscore()
             for app in self._apps:
                 app._ = self.bytestring_decoded_gettext
             self._cache[self._lang_code] = self.trans
