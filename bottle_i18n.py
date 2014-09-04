@@ -75,8 +75,12 @@ class I18NMiddleware(object):
 
         `explicit_redirect`
         assume default language is "de", url "/" is requested, if
+
         `explicit_redirect` is enabled, the lang code will be always prepended
         to the request url, so "/" becomes "/de".
+
+        `static_routes`
+        avoid to prefix lang code on static resources
         """
         self._app = app
         self.app.install(i18n)
@@ -86,6 +90,7 @@ class I18NMiddleware(object):
         self.translators = kwargs.get("external_translators")
 
         self.is_explicit_redirect = kwargs.get("explicit_redirect")
+        self.static_routes = kwargs.get("static_routes")
 
         if sub_app:
             for route in self.app.routes:
@@ -102,9 +107,12 @@ class I18NMiddleware(object):
                 environ['PATH_INFO'] = environ['PATH_INFO'][len(locale)+1:]
             else:
                 self.app.lang = i18n._default
-                if self.is_explicit_redirect:
-                    _url = "/{0}{1}".format(
-                        i18n._default, environ['PATH_INFO'])
+                if self.is_explicit_redirect and \
+                        locale not in self.static_routes:
+                    query = environ["QUERY_STRING"]
+                    _query = "?"+query if query else query
+                    _url = "/{0}{1}{2}".format(
+                        i18n.get_lang(), environ['PATH_INFO'], _query)
                     start_response('302 Found', [('Location', _url)],
                         sys.exc_info())
                     return []
