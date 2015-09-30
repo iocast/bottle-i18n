@@ -46,7 +46,7 @@ Usage Example:
 	if __name__ == '__main__':
 	    bottle.run(app=get(), host='localhost', port='8000', quiet=False, reloader=True, debug=True)
 
-Running the above example it automatically loads the default language `en` if in the URL the langauge code or the `HTTP_ACCEPT_LANGUAGE` sent from the browser is missing.
+Running the above example it automatically loads the default language `en` if in the URL the language code or the `HTTP_ACCEPT_LANGUAGE` sent from the browser is missing.
 
 The URL structure is as follow
 
