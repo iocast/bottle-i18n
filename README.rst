@@ -2,7 +2,7 @@ The bottle-i18n plugin integrates the multilingual internationalization services
 
 Usage Example:
 
-::
+.. code:: python
 
     #!/usr/bin/python
 
